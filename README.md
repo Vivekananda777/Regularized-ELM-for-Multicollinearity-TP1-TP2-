@@ -1,4 +1,5 @@
-# 🧠 ML Benchmark Platform
+
+# 🚀 Novel Statistical Regularized Extreme Learning Machine (TP1-ELM & TP2-ELM)
 
 A professional web-based machine learning benchmarking and research platform built with Django, MySQL, Bootstrap 5, and scikit-learn. It allows researchers and analysts to upload datasets, configure ML algorithms, run experiments, analyze multicollinearity, and export detailed PDF reports — all from a single unified interface.
 
@@ -23,32 +24,106 @@ A professional web-based machine learning benchmarking and research platform bui
 
 ## 🔍 Overview
 
-ML Benchmark Platform is designed for researchers working on novel statistical and regularized extreme learning machine studies. It provides a complete pipeline from raw data upload to model evaluation and report generation, with role-based access control, audit logging, and a clean modern dark-themed UI.
+This project presents a novel machine learning approach to address multicollinearity, a common issue where highly correlated features degrade model performance and stability.
 
+To solve this, I developed two advanced algorithms:
+
+TP1-ELM (Two-Parameter Extreme Learning Machine)
+TP2-ELM (Two-Parameter Extreme Learning Machine)
+
+These models integrate statistical regularization techniques into the Extreme Learning Machine framework, improving generalization and prediction stability.
+
+The project is implemented as a full-stack MLOps platform using Django, enabling dataset management, diagnostics, model training, benchmarking, and reporting.
 ---
+
+## 🎯 Problem Statement
+
+Multicollinearity negatively impacts machine learning models by:
+
+Producing unstable coefficients
+Reducing interpretability
+Causing overfitting and poor generalization
+
+Traditional algorithms do not explicitly handle this issue.
+
+## 💡 Proposed Solution
+
+This project introduces statistical regularization into ELM using:
+
+Ridge Regression (controls coefficient magnitude)
+Liu Estimator (controls bias and variance)
+## 🔥 Key Innovation
+Developed TP1-ELM and TP2-ELM
+Combines ridge and Liu estimators into ELM
+Improves stability in multicollinear environments
+
+## 🏗️ System Architecture
+``
+Dataset Upload
+      ↓
+Data Preprocessing
+      ↓
+Multicollinearity Detection (VIF + Correlation)
+      ↓
+TP1-ELM / TP2-ELM Training
+      ↓
+Performance Evaluation
+      ↓
+Dashboard & Visualization
+      ↓
+Report Generation
+      ↓
+Monitoring System
+``
 
 ## ✅ Features
 
-### User Features
-- **New Experiment** — Upload dataset, configure algorithm, and train model in one unified form
-- **Dataset Management** — Upload CSV, Excel, or JSON files with automatic preprocessing
-- **Auto Preprocessing** — Missing value imputation, label encoding, standard normalization
-- **Preprocessing Report** — Auto-generated summary of all transformations applied
-- **Algorithm Configuration** — Configure hyperparameters with dynamic input forms
-- **Saved Configurations** — Save and reload named experiment configurations
-- **Multicollinearity Diagnostics** — VIF scores per feature with threshold flagging
-- **Correlation Heatmap** — Seaborn heatmap for visual collinearity analysis
-- **Performance Dashboard** — Color-coded comparison table with best/worst highlighting
-- **Cross-Validation Analysis** — Per-fold CV scores with stability chart
-- **Export Reports** — Download PDF reports for results and diagnostic reports
-- **Plot Export** — Export individual result charts as PNG or SVG
+### 📊 Data Processing
+Dataset upload (CSV, Excel, JSON)
+Missing value handling (median/mode)
+Feature encoding & normalization
+Automated preprocessing reports
 
-### Admin Features
-- **User Management** — Create, edit, revoke, and restore user accounts
-- **Role Assignment** — Assign User or Admin roles
-- **Audit Log** — Full action history filterable by user, date, and action type
-- **Dataset Registry** — Deprecate datasets while retaining them for audit
+### 🔍 Multicollinearity Diagnostics
+Variance Inflation Factor (VIF) analysis
+Correlation matrix
+Heatmap visualization
 
+### 🧠 Machine Learning
+Implementation of ELM
+TP1-ELM & TP2-ELM algorithms
+Support for regression & classification
+Hyperparameter configuration
+
+### 📈 Benchmarking
+Compare multiple algorithms across datasets
+Cross-validation for reliable evaluation
+Metrics:
+Accuracy, F1-score
+RMSE, MAE, R²
+
+### 📊 Dashboard & Visualization
+Performance comparison charts
+Best model identification
+Dataset & algorithm analytics
+
+### 📄 Reporting
+Export results as PDF reports
+Generate performance charts (PNG/SVG)
+
+### 🛠️ Monitoring
+Database health check
+Storage monitoring
+Module status tracking
+Alert system
+
+
+## 🧪 Benchmarking Strategy
+
+Same dataset used for all models
+Identical preprocessing pipeline
+Standard evaluation metrics
+Cross-validation for robustness
 ---
 
 ## 🛠 Tech Stack
@@ -361,7 +436,6 @@ All algorithms automatically use:
 
 ## 👩‍💻 Developer
 
-**Project:** Novel Statistical Regularized Extreme Learning Machine Benchmark  
-**Platform:** ML Benchmark Research Platform v2.0  
-**Year:** 2024
+Vivekananda Survi
+Machine Learning & Data Engineering Enthusiast
 ```
