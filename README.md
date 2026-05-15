@@ -5,23 +5,6 @@ A professional web-based machine learning benchmarking and research platform bui
 
 ---
 
-## 📋 Table of Contents
-
-- [Overview](#overview)
-- [Features](#features)
-- [Tech Stack](#tech-stack)
-- [Project Structure](#project-structure)
-- [Installation](#installation)
-- [Database Setup](#database-setup)
-- [Running the Project](#running-the-project)
-- [Sample Datasets](#sample-datasets)
-- [How to Use](#how-to-use)
-- [User Roles](#user-roles)
-- [Algorithms Supported](#algorithms-supported)
-- [Functional Requirements](#functional-requirements)
-
----
-
 ## 🔍 Overview
 
 This project presents a novel machine learning approach to address multicollinearity, a common issue where highly correlated features degrade model performance and stability.
@@ -32,9 +15,10 @@ TP1-ELM (Two-Parameter Extreme Learning Machine)
 TP2-ELM (Two-Parameter Extreme Learning Machine)
 
 These models integrate statistical regularization techniques into the Extreme Learning Machine framework, improving generalization and prediction stability.
-
 The project is implemented as a full-stack MLOps platform using Django, enabling dataset management, diagnostics, model training, benchmarking, and reporting.
+
 ---
+
 
 ## 🎯 Problem Statement
 
@@ -56,6 +40,7 @@ Liu Estimator (controls bias and variance)
 Developed TP1-ELM and TP2-ELM
 Combines ridge and Liu estimators into ELM
 Improves stability in multicollinear environments
+
 
 ## 🏗️ System Architecture
 ``
