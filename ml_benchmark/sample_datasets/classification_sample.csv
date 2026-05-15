@@ -1,0 +1,36 @@
+# Run this Python script to generate sample datasets
+import pandas as pd
+import numpy as np
+
+np.random.seed(42)
+n = 500
+
+# Classification Dataset
+df_clf = pd.DataFrame({
+    'age': np.random.randint(18, 70, n),
+    'income': np.random.normal(50000, 15000, n).astype(int),
+    'credit_score': np.random.randint(300, 850, n),
+    'loan_amount': np.random.normal(20000, 8000, n).astype(int),
+    'employment_years': np.random.randint(0, 40, n),
+    'debt_ratio': np.random.uniform(0.1, 0.9, n).round(3),
+    'num_dependents': np.random.randint(0, 5, n),
+    'education': np.random.choice(['High School', 'Bachelor', 'Master', 'PhD'], n),
+    'loan_approved': np.random.choice([0, 1], n, p=[0.35, 0.65])
+})
+df_clf.to_csv('sample_datasets/loan_classification.csv', index=False)
+
+# Regression Dataset
+df_reg = pd.DataFrame({
+    'sqft': np.random.randint(500, 4000, n),
+    'bedrooms': np.random.randint(1, 6, n),
+    'bathrooms': np.random.randint(1, 4, n),
+    'age_years': np.random.randint(0, 50, n),
+    'garage': np.random.randint(0, 3, n),
+    'neighborhood_score': np.random.uniform(1, 10, n).round(1),
+    'school_rating': np.random.uniform(1, 10, n).round(1),
+    'distance_city': np.random.uniform(0.5, 50, n).round(2),
+    'price': (np.random.randint(500, 4000, n) * 120 + np.random.normal(0, 20000, n)).astype(int)
+})
+df_reg.to_csv('sample_datasets/house_prices.csv', index=False)
+
+print("Datasets created: loan_classification.csv and house_prices.csv")

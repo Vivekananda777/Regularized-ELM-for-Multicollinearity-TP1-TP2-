@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Training History</title>
+
+<style>
+
+body{
+    background:#0f172a;
+    font-family: "Segoe UI", sans-serif;
+    color:white;
+    padding:40px;
+}
+
+/* Page title */
+.page-title{
+    font-size:28px;
+    font-weight:600;
+    margin-bottom:10px;
+}
+
+.subtitle{
+    color:#94a3b8;
+    margin-bottom:30px;
+}
+
+/* Table container */
+.table-card{
+    background:#1e293b;
+    border-radius:12px;
+    padding:20px;
+}
+
+/* Table */
+table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+/* Table header */
+thead{
+    background:#312e81;
+}
+
+th{
+    padding:14px;
+    text-align:left;
+    font-size:13px;
+    letter-spacing:.5px;
+    color:#c7d2fe;
+}
+
+td{
+    padding:14px;
+    border-top:1px solid #334155;
+    color:#e2e8f0;
+}
+
+/* Hover */
+tr:hover{
+    background:#1f2937;
+}
+
+/* Empty message */
+.no-data{
+    text-align:center;
+    padding:30px;
+    color:#94a3b8;
+}
+
+/* Status badge */
+.badge{
+    padding:5px 10px;
+    border-radius:6px;
+    font-size:12px;
+    background:#10b981;
+}
+
+/* Action button */
+.btn{
+    padding:6px 12px;
+    border:none;
+    border-radius:6px;
+    background:#6366f1;
+    color:white;
+    cursor:pointer;
+    font-size:12px;
+}
+
+.btn:hover{
+    background:#4f46e5;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="page-title">Training History</div>
+<div class="subtitle">View all previous model training experiments</div>
+
+<div class="table-card">
+
+<table>
+
+<thead>
+<tr>
+<th>ID</th>
+<th>DATASET</th>
+<th>ALGORITHM</th>
+<th>ACCURACY</th>
+<th>TRAIN TIME</th>
+<th>DATE</th>
+<th>ACTIONS</th>
+</tr>
+</thead>
+
+<tbody>
+
+{% if results %}
+
+{% for result in results %}
+
+<tr>
+<td>{{ result.id }}</td>
+<td>{{ result.dataset }}</td>
+<td>{{ result.algorithm_config }}</td>
+<td>{{ result.accuracy }}</td>
+<td>{{ result.training_time }}</td>
+<td>{{ result.created_at }}</td>
+
+<td>
+<button class="btn">View</button>
+</td>
+
+</tr>
+
+{% endfor %}
+
+{% else %}
+
+<tr>
+<td colspan="7" class="no-data">No training history available</td>
+</tr>
+
+{% endif %}
+
+</tbody>
+
+</table>
+
+</div>
+
+</body>
+</html>

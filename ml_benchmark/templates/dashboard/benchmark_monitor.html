@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+{% block title %}Benchmark Monitor{% endblock %}
+{% block page_title %}Benchmark Monitor{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div><h1>Benchmark Jobs</h1><p>Schedule, run, and monitor batch benchmark jobs in real-time</p></div>
+  <a href="{% url 'dashboard:benchmark_schedule' %}" class="btn btn-primary"><i class="fas fa-plus"></i> New Job</a>
+</div>
+
+<!-- Stats -->
+<div class="row g-3 mb-4">
+  {% for status, label, color, icon in job_stats %}
+  <div class="col-md-3">
+    <div class="stat-card">
+      <div class="stat-icon" style="background:{{ color }}">{{ icon }}</div>
+      <div class="stat-value" style="font-size:26px">{{ label }}</div>
+      <div class="stat-label">{{ status }}</div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <h5><i class="fas fa-tasks me-2" style="color:#4f46e5"></i>All Jobs ({{ jobs|length }})</h5>
+  </div>
+  <div style="overflow-x:auto">
+    <table class="table-dark-custom">
+      <thead>
+        <tr><th>Job Name</th><th>Datasets</th><th>Algorithms</th><th>Status</th><th>By</th><th>Created</th><th>Duration</th><th>Actions</th></tr>
+      </thead>
+      <tbody>
+        {% for job in jobs %}
+        <tr>
+          <td><strong style="color:#e2e8f0">{{ job.name }}</strong></td>
+          <td><span class="badge-custom badge-info">{{ job.datasets.count }}</span></td>
+          <td><span class="badge-custom badge-primary">{{ job.algorithms.count }}</span></td>
+          <td>
+            <span class="badge-custom
+              {% if job.status == 'completed' %}badge-success
+              {% elif job.status == 'running' %}badge-info
+              {% elif job.status == 'failed' %}badge-danger
+              {% elif job.status == 'cancelled' %}badge-warning
+              {% else %}badge-primary{% endif %}">
+              {% if job.status == 'running' %}
+                <span class="status-dot status-healthy" style="animation:pulse 1s infinite"></span>
+              {% endif %}
+              {{ job.get_status_display }}
+            </span>
+          </td>
+          <td style="color:#94a3b8;font-size:12px">{{ job.scheduled_by.username }}</td>
+          <td style="color:#64748b;font-size:12px">{{ job.created_at|date:"M d, Y H:i" }}</td>
+          <td style="color:#64748b;font-size:12px">
+            {% if job.started_at and job.completed_at %}
+              {{ job.completed_at|timeuntil:job.started_at }}
+            {% else %}—{% endif %}
+          </td>
+          <td>
+            <div class="d-flex gap-1">
+              {% if job.status == 'pending' %}
+              <a href="{% url 'dashboard:run_benchmark' job.pk %}"
+                 class="btn btn-sm btn-success"
+                 onclick="return confirm('Run benchmark job \'{{ job.name }}\'? This may take several minutes.')">
+                <i class="fas fa-play"></i> Run
+              </a>
+              <a href="{% url 'dashboard:cancel_job' job.pk %}"
+                 class="btn btn-sm btn-danger"
+                 onclick="return confirm('Cancel this job?')">
+                <i class="fas fa-stop"></i>
+              </a>
+              {% elif job.status == 'running' %}
+              <a href="{% url 'dashboard:cancel_job' job.pk %}" class="btn btn-sm btn-danger">
+                <i class="fas fa-stop"></i> Stop
+              </a>
+              {% elif job.status == 'completed' %}
+              <a href="{% url 'dashboard:performance' %}" class="btn btn-sm btn-outline-primary">
+                <i class="fas fa-chart-bar"></i> Results
+              </a>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="8" style="text-align:center;padding:50px;color:#64748b">
+            <i class="fas fa-calendar-times" style="font-size:36px;display:block;margin-bottom:12px;opacity:0.3"></i>
+            No benchmark jobs yet.
+            <a href="{% url 'dashboard:benchmark_schedule' %}" style="color:#818cf8"> Schedule one →</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

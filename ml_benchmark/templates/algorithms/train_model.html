@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block title %}Training History{% endblock %}
+{% block page_title %}Training History{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div><h1>My Training History</h1><p>All model training runs you have initiated</p></div>
+  <a href="{% url 'algorithms:train_model' %}" class="btn btn-primary"><i class="fas fa-play"></i> New Training</a>
+</div>
+<div class="card">
+  <div style="overflow-x:auto">
+    <table class="table-dark-custom">
+      <thead>
+        <tr><th>Algorithm</th><th>Dataset</th><th>Status</th><th>Accuracy</th><th>RMSE</th><th>F1</th><th>Time(s)</th><th>Date</th><th>Actions</th></tr>
+      </thead>
+      <tbody>
+        {% for r in results %}
+        <tr>
+          <td><strong style="color:#e2e8f0">{{ r.algorithm_config.name }}</strong></td>
+          <td style="color:#94a3b8;font-size:12px">{{ r.dataset.name }}</td>
+          <td>
+            <span class="badge-custom {% if r.status == 'completed' %}badge-success{% else %}badge-danger{% endif %}">
+              {{ r.status|title }}
+            </span>
+          </td>
+          <td style="color:#818cf8;font-weight:600">{{ r.accuracy|floatformat:4|default:'—' }}</td>
+          <td style="color:#22d3ee">{{ r.rmse|floatformat:4|default:'—' }}</td>
+          <td style="color:#a78bfa">{{ r.f1_score|floatformat:4|default:'—' }}</td>
+          <td style="color:#64748b;font-size:12px">{{ r.training_time|floatformat:3|default:'—' }}</td>
+          <td style="color:#64748b;font-size:12px">{{ r.created_at|date:"M d, Y H:i" }}</td>
+          <td>
+            {% if r.status == 'completed' %}
+            <a href="{% url 'dashboard:results_detail' r.pk %}" class="btn btn-sm btn-outline-primary"><i class="fas fa-eye"></i></a>
+            {% elif r.status == 'failed' %}
+            <span style="color:#f87171;font-size:11px" title="{{ r.error_message }}"><i class="fas fa-exclamation-circle"></i> Error</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="9" style="text-align:center;padding:50px;color:#64748b">No training history yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div><h1>Welcome back, {{ request.user.first_name|default:request.user.username }}!</h1><p>ML Benchmark Platform Overview</p></div>
+  <div class="d-flex gap-2">
+    <a href="{% url 'datasets:dataset_upload' %}" class="btn btn-outline-primary btn-sm"><i class="fas fa-upload"></i> Upload</a>
+    <a href="{% url 'algorithms:train_model' %}" class="btn btn-primary btn-sm"><i class="fas fa-play"></i> Train Model</a>
+  </div>
+</div>
+
+<!-- Stats Row -->
+<div class="row g-4 mb-4">
+  <div class="col-md-3">
+    <div class="stat-card" style="--accent-gradient:linear-gradient(90deg,#4f46e5,#7c3aed)">
+      <div class="stat-icon" style="background:rgba(79,70,229,0.15)">📁</div>
+      <div class="stat-value">{{ total_datasets }}</div>
+      <div class="stat-label">Active Datasets</div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="stat-card" style="--accent-gradient:linear-gradient(90deg,#7c3aed,#9333ea)">
+      <div class="stat-icon" style="background:rgba(124,58,237,0.15)">⚙️</div>
+      <div class="stat-value">{{ total_algorithms }}</div>
+      <div class="stat-label">Algorithms Configured</div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="stat-card" style="--accent-gradient:linear-gradient(90deg,#0891b2,#06b6d4)">
+      <div class="stat-icon" style="background:rgba(8,145,178,0.15)">🧪</div>
+      <div class="stat-value">{{ total_results }}</div>
+      <div class="stat-label">Experiments Run</div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="stat-card" style="--accent-gradient:linear-gradient(90deg,#059669,#10b981)">
+      <div class="stat-icon" style="background:rgba(5,150,105,0.15)">✅</div>
+      <div class="stat-value">{{ total_results }}</div>
+      <div class="stat-label">Completed Jobs</div>
+    </div>
+  </div>
+</div>
+
+<!-- Chart + Recent Results -->
+<div class="row g-4">
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-header">
+        <h5><i class="fas fa-chart-line me-2" style="color:#4f46e5"></i>Performance Overview</h5>
+        <a href="{% url 'dashboard:performance' %}" class="btn btn-sm btn-outline-primary">View All</a>
+      </div>
+      <div class="card-body">
+        <canvas id="perfChart" height="220"></canvas>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card" style="height:100%">
+      <div class="card-header"><h5><i class="fas fa-clock me-2" style="color:#7c3aed"></i>Recent Experiments</h5></div>
+      <div class="card-body" style="padding:0">
+        {% for r in recent_results %}
+        <div style="padding:14px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <div style="font-weight:600;color:#e2e8f0;font-size:13px">{{ r.algorithm_config.name|truncatechars:20 }}</div>
+            <div style="font-size:11px;color:#64748b">{{ r.dataset.name|truncatechars:20 }}</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:12px;color:{% if r.accuracy %}#34d399{% else %}#818cf8{% endif %};font-weight:600">
+              {% if r.accuracy %}{{ r.accuracy|floatformat:3 }}{% elif r.rmse %}RMSE: {{ r.rmse|floatformat:3 }}{% endif %}
+            </div>
+            <div style="font-size:10px;color:#475569">{{ r.created_at|date:"M d" }}</div>
+          </div>
+        </div>
+        {% empty %}
+        <div style="padding:40px;text-align:center;color:#64748b"><i class="fas fa-flask" style="font-size:28px;display:block;margin-bottom:12px"></i>No experiments yet</div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row g-4 mt-0">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-body" style="padding:20px 24px">
+        <div style="font-size:12px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:14px">Quick Actions</div>
+        <div class="d-flex gap-3 flex-wrap">
+          <a href="{% url 'datasets:dataset_upload' %}" class="btn btn-outline-primary"><i class="fas fa-upload"></i> Upload Dataset</a>
+          <a href="{% url 'algorithms:algorithm_create' %}" class="btn btn-outline-primary"><i class="fas fa-plus"></i> New Algorithm</a>
+          <a href="{% url 'algorithms:train_model' %}" class="btn btn-primary"><i class="fas fa-rocket"></i> Train Model</a>
+          <a href="{% url 'diagnostics:run_diagnostic' %}" class="btn btn-outline-primary"><i class="fas fa-stethoscope"></i> Run Diagnostic</a>
+          <a href="{% url 'exports:export_results_pdf' %}" class="btn btn-outline-primary"><i class="fas fa-file-pdf"></i> Export Report</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+fetch("{% url 'dashboard:api_results' %}")
+  .then(r => r.json())
+  .then(data => {
+    const results = data.results.slice(0, 8);
+    const labels = results.map(r => r.algorithm.substring(0, 12));
+    const scores = results.map(r => r.accuracy || (r.rmse ? Math.max(0, 1 - r.rmse) : 0));
+    const ctx = document.getElementById('perfChart').getContext('2d');
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Performance Score',
+          data: scores,
+          backgroundColor: ['#4f46e5','#7c3aed','#2563eb','#0891b2','#059669','#d97706','#dc2626','#9333ea'],
+          borderRadius: 6,
+          borderSkipped: false,
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ` Score: ${ctx.raw.toFixed(4)}` } } },
+        scales: {
+          y: { grid: { color: 'rgba(51,65,85,0.5)' }, ticks: { color: '#94a3b8' }, beginAtZero: true, max: 1 },
+          x: { grid: { display: false }, ticks: { color: '#94a3b8', maxRotation: 30 } }
+        }
+      }
+    });
+  });
+</script>
+{% endblock %}

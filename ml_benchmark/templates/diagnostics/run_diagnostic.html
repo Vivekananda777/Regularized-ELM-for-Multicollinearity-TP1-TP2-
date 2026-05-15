@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% block title %}Run Diagnostic{% endblock %}
+{% block page_title %}Multicollinearity Diagnostic{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div><h1>Multicollinearity Diagnostic</h1><p>Compute VIF scores and correlation analysis</p></div>
+  <a href="{% url 'diagnostics:report_list' %}" class="btn btn-outline-primary"><i class="fas fa-history"></i> Past Reports</a>
+</div>
+<div class="row g-4">
+  <div class="col-md-7">
+    <div class="card">
+      <div class="card-header"><h5><i class="fas fa-stethoscope me-2" style="color:#4f46e5"></i>Configure Diagnostic</h5></div>
+      <div class="card-body">
+        <form method="post">
+          {% csrf_token %}
+          <div class="form-section">
+            <div class="form-section-title"><i class="fas fa-database"></i> Select Dataset</div>
+            <div class="mb-3">
+              <label class="form-label">Dataset</label>
+              <select name="dataset_id" class="form-select" required>
+                <option value="">Choose a dataset...</option>
+                {% for ds in datasets %}
+                <option value="{{ ds.pk }}">{{ ds.name }} ({{ ds.get_task_type_display }}) — {{ ds.rows }} rows</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          <div class="form-section">
+            <div class="form-section-title"><i class="fas fa-sliders-h"></i> VIF Settings</div>
+            <div>
+              <label class="form-label">VIF Threshold</label>
+              <input type="number" name="vif_threshold" value="5.0" step="0.5" min="1" class="form-control">
+              <div style="font-size:11px;color:#64748b;margin-top:4px">Features above this threshold are flagged as potentially collinear (common: 5 or 10)</div>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary w-100" style="padding:13px;font-size:15px">
+            <i class="fas fa-microscope"></i> Run Diagnostic
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-5">
+    <div class="card">
+      <div class="card-header"><h5><i class="fas fa-graduation-cap me-2" style="color:#06b6d4"></i>About VIF</h5></div>
+      <div class="card-body" style="font-size:13px;color:#94a3b8;display:flex;flex-direction:column;gap:12px">
+        <div style="padding:12px;background:rgba(16,185,129,0.08);border-radius:8px;border-left:3px solid #10b981">
+          <strong style="color:#34d399">VIF &lt; 5:</strong> No significant multicollinearity. Feature is safe to use.
+        </div>
+        <div style="padding:12px;background:rgba(245,158,11,0.08);border-radius:8px;border-left:3px solid #f59e0b">
+          <strong style="color:#fbbf24">5 ≤ VIF &lt; 10:</strong> Moderate multicollinearity. Consider investigating.
+        </div>
+        <div style="padding:12px;background:rgba(239,68,68,0.08);border-radius:8px;border-left:3px solid #ef4444">
+          <strong style="color:#f87171">VIF ≥ 10:</strong> High multicollinearity. Feature may need to be dropped or combined.
+        </div>
+        <p>The system also generates an interactive correlation heatmap to visually identify collinear pairs.</p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% block title %}Login — ML Benchmark{% endblock %}
+{% block auth_content %}
+<div class="login-page">
+  <div class="login-card">
+
+    <div class="login-logo">🧠</div>
+    <h2 style="text-align:center;font-weight:800;font-size:22px;color:#f1f5f9;margin-bottom:6px">
+      Welcome Back
+    </h2>
+    <p style="text-align:center;color:#64748b;font-size:13px;margin-bottom:32px">
+      ML Benchmark Research Platform
+    </p>
+
+    {% if messages %}
+      {% for msg in messages %}
+        <div class="alert-custom alert-{{ msg.tags }}"
+             style="margin-bottom:16px;display:flex;align-items:center;gap:10px">
+          <i class="fas fa-exclamation-circle"></i>
+          <span>{{ msg }}</span>
+        </div>
+      {% endfor %}
+    {% endif %}
+
+    <form method="post" novalidate>
+      {% csrf_token %}
+
+      <div class="mb-3">
+        <label class="form-label">
+          <i class="fas fa-user me-1" style="color:#64748b"></i> Username
+        </label>
+        {{ form.username }}
+        {% if form.username.errors %}
+          <div style="color:#f87171;font-size:12px;margin-top:4px">{{ form.username.errors.0 }}</div>
+        {% endif %}
+      </div>
+
+      <div class="mb-4">
+        <label class="form-label">
+          <i class="fas fa-lock me-1" style="color:#64748b"></i> Password
+        </label>
+        {{ form.password }}
+        {% if form.password.errors %}
+          <div style="color:#f87171;font-size:12px;margin-top:4px">{{ form.password.errors.0 }}</div>
+        {% endif %}
+      </div>
+
+      <button type="submit"
+              class="btn btn-primary w-100"
+              style="padding:13px;font-size:15px;margin-bottom:16px">
+        <i class="fas fa-sign-in-alt me-2"></i> Sign In
+      </button>
+
+      <!-- Register link -->
+      <div style="text-align:center;padding-top:14px;border-top:1px solid var(--border)">
+        <span style="color:#64748b;font-size:13px">Don't have an account?</span>
+        <a href="{% url 'accounts:register' %}"
+           style="color:#818cf8;text-decoration:none;font-weight:600;margin-left:6px">
+          Register →
+        </a>
+      </div>
+
+    </form>
+
+    <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);text-align:center">
+      <p style="font-size:11px;color:#475569;margin:0">
+        ML Benchmark Platform &copy; 2024
+      </p>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

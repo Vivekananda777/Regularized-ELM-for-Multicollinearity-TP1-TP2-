@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block title %}VIF Reports{% endblock %}
+{% block page_title %}Diagnostic Reports{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div><h1>Diagnostic Reports</h1><p>Your multicollinearity analysis history</p></div>
+  <a href="{% url 'diagnostics:run_diagnostic' %}" class="btn btn-primary"><i class="fas fa-plus"></i> New Diagnostic</a>
+</div>
+<div class="card">
+  <div class="card-body" style="padding:0">
+    <table class="table-dark-custom">
+      <thead><tr><th>Dataset</th><th>Features</th><th>High VIF</th><th>Threshold</th><th>Date</th><th>Actions</th></tr></thead>
+      <tbody>
+        {% for report in reports %}
+        <tr>
+          <td><strong style="color:#e2e8f0">{{ report.dataset.name }}</strong></td>
+          <td>{{ report.vif_results|length }}</td>
+          <td>
+            {% if report.high_vif_features %}
+              <span class="badge-custom badge-danger">{{ report.high_vif_features|length }} flagged</span>
+            {% else %}
+              <span class="badge-custom badge-success">None</span>
+            {% endif %}
+          </td>
+          <td>{{ report.vif_threshold }}</td>
+          <td style="color:#64748b;font-size:12px">{{ report.created_at|date:"M d, Y H:i" }}</td>
+          <td>
+            <div class="d-flex gap-2">
+              <a href="{% url 'diagnostics:report_detail' report.pk %}" class="btn btn-sm btn-outline-primary"><i class="fas fa-eye"></i></a>
+              <a href="{% url 'exports:export_diagnostic_pdf' report.pk %}" class="btn btn-sm btn-primary"><i class="fas fa-file-pdf"></i></a>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" style="text-align:center;padding:40px;color:#64748b">No reports yet. Run your first diagnostic.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

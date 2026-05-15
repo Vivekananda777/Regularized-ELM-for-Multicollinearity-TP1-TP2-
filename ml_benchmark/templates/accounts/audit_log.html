@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block title %}Audit Log{% endblock %}
+{% block page_title %}Audit Log{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div><h1>Audit Log</h1><p>Track all user actions for compliance</p></div>
+</div>
+<div class="card mb-4">
+  <div class="card-body">
+    <form method="get" class="row g-3">
+      <div class="col-md-4">
+        <label class="form-label">Filter by User</label>
+        <input type="text" name="user" value="{{ user_filter }}" class="form-control" placeholder="Username">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Filter by Action</label>
+        <input type="text" name="action" value="{{ action_filter }}" class="form-control" placeholder="Action keyword">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Filter by Date</label>
+        <input type="date" name="date" value="{{ date_filter }}" class="form-control">
+      </div>
+      <div class="col-md-1 d-flex align-items-end">
+        <button type="submit" class="btn btn-primary w-100"><i class="fas fa-search"></i></button>
+      </div>
+    </form>
+  </div>
+</div>
+<div class="card">
+  <div class="card-header"><h5><i class="fas fa-shield-alt me-2" style="color:#4f46e5"></i>Action Log ({{ logs|length }} entries)</h5></div>
+  <div class="card-body" style="padding:0">
+    <table class="table-dark-custom">
+      <thead><tr><th>User</th><th>Action</th><th>Details</th><th>IP Address</th><th>Timestamp</th></tr></thead>
+      <tbody>
+        {% for log in logs %}
+        <tr>
+          <td><strong style="color:#a5b4fc">{{ log.user.username|default:'System' }}</strong></td>
+          <td><span class="badge-custom badge-info">{{ log.action }}</span></td>
+          <td style="color:#94a3b8;font-size:12px">{{ log.details|truncatechars:60 }}</td>
+          <td style="color:#64748b;font-size:12px">{{ log.ip_address|default:'—' }}</td>
+          <td style="color:#64748b;font-size:12px">{{ log.timestamp|date:"M d, Y H:i" }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" style="text-align:center;padding:40px;color:#64748b">No audit log entries found</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

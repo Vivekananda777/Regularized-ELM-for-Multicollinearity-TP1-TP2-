@@ -1,0 +1,183 @@
+{% extends 'base.html' %}
+{% block title %}Result Detail{% endblock %}
+{% block page_title %}Training Result{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1>{{ result.algorithm_config.name }}</h1>
+    <p>on {{ result.dataset.name }} · {{ result.created_at|date:"M d, Y H:i" }}</p>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="{% url 'dashboard:performance' %}" class="btn btn-outline-primary">
+      <i class="fas fa-arrow-left"></i> Back
+    </a>
+    <a href="{% url 'exports:export_results_pdf' %}" class="btn btn-primary">
+      <i class="fas fa-file-pdf"></i> Export
+    </a>
+  </div>
+</div>
+
+<!-- Metric Cards -->
+<div class="row g-4 mb-4">
+  {% if result.accuracy %}
+  <div class="col-md-3">
+    <div class="stat-card">
+      <div class="stat-icon" style="background:rgba(79,70,229,0.15)">🎯</div>
+      <div class="stat-value" style="color:#818cf8">{{ result.accuracy|floatformat:4 }}</div>
+      <div class="stat-label">Accuracy</div>
+    </div>
+  </div>
+  {% endif %}
+  {% if result.f1_score %}
+  <div class="col-md-3">
+    <div class="stat-card">
+      <div class="stat-icon" style="background:rgba(124,58,237,0.15)">📐</div>
+      <div class="stat-value" style="color:#a78bfa">{{ result.f1_score|floatformat:4 }}</div>
+      <div class="stat-label">F1-Score</div>
+    </div>
+  </div>
+  {% endif %}
+  {% if result.rmse %}
+  <div class="col-md-3">
+    <div class="stat-card">
+      <div class="stat-icon" style="background:rgba(239,68,68,0.15)">📉</div>
+      <div class="stat-value" style="color:#f87171">{{ result.rmse|floatformat:4 }}</div>
+      <div class="stat-label">RMSE</div>
+    </div>
+  </div>
+  {% endif %}
+  {% if result.mae %}
+  <div class="col-md-3">
+    <div class="stat-card">
+      <div class="stat-icon" style="background:rgba(245,158,11,0.15)">📊</div>
+      <div class="stat-value" style="color:#fbbf24">{{ result.mae|floatformat:4 }}</div>
+      <div class="stat-label">MAE</div>
+    </div>
+  </div>
+  {% endif %}
+  {% if result.r2_score %}
+  <div class="col-md-3">
+    <div class="stat-card">
+      <div class="stat-icon" style="background:rgba(6,182,212,0.15)">🔢</div>
+      <div class="stat-value" style="color:#22d3ee">{{ result.r2_score|floatformat:4 }}</div>
+      <div class="stat-label">R² Score</div>
+    </div>
+  </div>
+  {% endif %}
+  <div class="col-md-3">
+    <div class="stat-card">
+      <div class="stat-icon" style="background:rgba(16,185,129,0.15)">⏱️</div>
+      <div class="stat-value" style="font-size:22px">{{ result.training_time|floatformat:4 }}s</div>
+      <div class="stat-label">Training Time</div>
+    </div>
+  </div>
+</div>
+
+<!-- CV Scores -->
+{% if result.cv_scores %}
+<div class="card mb-4">
+  <div class="card-header">
+    <h5><i class="fas fa-layer-group me-2" style="color:#4f46e5"></i>5-Fold Cross-Validation Scores</h5>
+  </div>
+  <div class="card-body">
+    <div class="row g-3 mb-4">
+      {% for score in result.cv_scores %}
+      <div class="col-md-2 col-4">
+        <div style="background:rgba(79,70,229,0.1);border:1px solid rgba(79,70,229,0.3);
+                    border-radius:10px;padding:14px;text-align:center">
+          <div style="font-size:10px;color:#64748b;margin-bottom:4px">Fold {{ forloop.counter }}</div>
+          <div style="font-size:20px;font-weight:800;color:#818cf8">{{ score|floatformat:3 }}</div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    <canvas id="cvChart" height="120"></canvas>
+  </div>
+</div>
+{% endif %}
+
+<!-- Config Details -->
+<div class="card">
+  <div class="card-header">
+    <h5><i class="fas fa-info-circle me-2" style="color:#7c3aed"></i>Configuration Details</h5>
+  </div>
+  <div class="card-body">
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label">Algorithm Type</label>
+        <div class="form-control" style="opacity:0.7">
+          {{ result.algorithm_config.get_algorithm_type_display }}
+        </div>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Dataset</label>
+        <div class="form-control" style="opacity:0.7">{{ result.dataset.name }}</div>
+      </div>
+      {% for k, v in result.algorithm_config.hyperparameters.items %}
+      <div class="col-md-4">
+        <label class="form-label">{{ k }}</label>
+        <div class="form-control" style="opacity:0.7">{{ v }}</div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+{% if result.cv_scores %}
+<script>
+// Build fold labels in plain JS — no custom template filter needed
+const cvScores = {{ result.cv_scores|safe }};
+const foldLabels = cvScores.map((_, i) => 'Fold ' + (i + 1));
+const meanScore  = cvScores.reduce((a, b) => a + b, 0) / cvScores.length;
+
+const ctx = document.getElementById('cvChart').getContext('2d');
+new Chart(ctx, {
+  type: 'line',
+  data: {
+    labels: foldLabels,
+    datasets: [
+      {
+        label: 'CV Score per Fold',
+        data: cvScores,
+        borderColor: '#4f46e5',
+        backgroundColor: 'rgba(79,70,229,0.1)',
+        tension: 0.4,
+        fill: true,
+        pointBackgroundColor: '#818cf8',
+        pointRadius: 6,
+      },
+      {
+        label: 'Mean: ' + meanScore.toFixed(4),
+        data: cvScores.map(() => meanScore),
+        borderColor: '#ef4444',
+        borderDash: [6, 3],
+        borderWidth: 2,
+        pointRadius: 0,
+        fill: false,
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { labels: { color: '#94a3b8' } }
+    },
+    scales: {
+      y: {
+        grid:  { color: 'rgba(51,65,85,0.5)' },
+        ticks: { color: '#94a3b8' }
+      },
+      x: {
+        grid:  { display: false },
+        ticks: { color: '#94a3b8' }
+      }
+    }
+  }
+});
+</script>
+{% endif %}
+{% endblock %}

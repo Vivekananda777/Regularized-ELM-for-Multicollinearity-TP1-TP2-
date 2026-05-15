@@ -1,0 +1,516 @@
+{% extends 'base.html' %}
+{% block title %}New Experiment{% endblock %}
+{% block page_title %}New Experiment{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1>New Experiment</h1>
+    <p>Upload dataset, configure algorithm and train — all in one step</p>
+  </div>
+  <a href="{% url 'dashboard:home' %}" class="btn btn-outline-primary">
+    <i class="fas fa-arrow-left"></i> Back
+  </a>
+</div>
+
+<form method="post" enctype="multipart/form-data" id="experimentForm" novalidate>
+  {% csrf_token %}
+
+  <div class="row g-4">
+
+    <!-- LEFT COLUMN -->
+    <div class="col-lg-8">
+
+      <!-- ── STEP 1: DATASET ──────────────────────────────────── -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5>
+            <span style="background:linear-gradient(135deg,#4f46e5,#7c3aed);
+                         color:#fff;border-radius:50%;width:26px;height:26px;
+                         display:inline-flex;align-items:center;justify-content:center;
+                         font-size:12px;font-weight:800;margin-right:10px">1</span>
+            Upload Dataset
+          </h5>
+        </div>
+        <div class="card-body">
+
+          <!-- File drop zone -->
+          <div class="upload-zone mb-4" id="uploadZone">
+            <i class="fas fa-cloud-upload-alt"
+               style="font-size:40px;color:#4f46e5;margin-bottom:12px;display:block"></i>
+            <div class="upload-label"
+                 style="font-weight:600;color:#e2e8f0;margin-bottom:6px">
+              Click or drag &amp; drop your file here
+            </div>
+            <div style="color:#64748b;font-size:12px">CSV, XLSX, XLS, JSON supported</div>
+            <input type="file" name="file" id="fileInput"
+                   accept=".csv,.xlsx,.xls,.json" required>
+          </div>
+
+          <!-- Dataset fields in one row -->
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">
+                Dataset Name <span style="color:#f87171">*</span>
+              </label>
+              <input type="text" name="ds_name"
+                     value="{{ post.ds_name|default:'' }}"
+                     class="form-control"
+                     placeholder="e.g. Loan Approval Dataset"
+                     required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">
+                Domain <span style="color:#f87171">*</span>
+              </label>
+              <input type="text" name="domain"
+                     value="{{ post.domain|default:'' }}"
+                     class="form-control"
+                     placeholder="e.g. Finance, Healthcare"
+                     required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">
+                Task Type <span style="color:#f87171">*</span>
+              </label>
+              <select name="task_type" class="form-select" required>
+                <option value="">-- Select --</option>
+                <option value="classification"
+                  {% if post.task_type == 'classification' %}selected{% endif %}>
+                  Classification
+                </option>
+                <option value="regression"
+                  {% if post.task_type == 'regression' %}selected{% endif %}>
+                  Regression
+                </option>
+                <option value="clustering"
+                  {% if post.task_type == 'clustering' %}selected{% endif %}>
+                  Clustering
+                </option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">
+                Target Column <span style="color:#f87171">*</span>
+              </label>
+              <input type="text" name="target_column"
+                     value="{{ post.target_column|default:'' }}"
+                     class="form-control"
+                     placeholder="e.g. loan_approved"
+                     required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Version</label>
+              <input type="text" name="version"
+                     value="{{ post.version|default:'1.0' }}"
+                     class="form-control"
+                     placeholder="1.0">
+            </div>
+            <div class="col-12">
+              <label class="form-label">Description</label>
+              <textarea name="description" class="form-control" rows="2"
+                        placeholder="Brief description of this dataset (optional)">{{ post.description|default:'' }}</textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── STEP 2: ALGORITHM ────────────────────────────────── -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5>
+            <span style="background:linear-gradient(135deg,#7c3aed,#9333ea);
+                         color:#fff;border-radius:50%;width:26px;height:26px;
+                         display:inline-flex;align-items:center;justify-content:center;
+                         font-size:12px;font-weight:800;margin-right:10px">2</span>
+            Configure Algorithm
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="row g-3">
+
+            <div class="col-md-6">
+              <label class="form-label">
+                Algorithm Name <span style="color:#f87171">*</span>
+              </label>
+              <input type="text" name="algo_name"
+                     value="{{ post.algo_name|default:'' }}"
+                     class="form-control"
+                     placeholder="e.g. My Random Forest"
+                     required>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">
+                Algorithm Type <span style="color:#f87171">*</span>
+              </label>
+              <select name="algo_type" class="form-select"
+                      id="algorithm_type_select" required>
+                <option value="">-- Select Algorithm --</option>
+                <optgroup label="Linear Models">
+                  <option value="linear_regression"  {% if post.algo_type == 'linear_regression'  %}selected{% endif %}>Linear Regression</option>
+                  <option value="ridge_regression"   {% if post.algo_type == 'ridge_regression'   %}selected{% endif %}>Ridge Regression</option>
+                  <option value="lasso_regression"   {% if post.algo_type == 'lasso_regression'   %}selected{% endif %}>Lasso Regression</option>
+                </optgroup>
+                <optgroup label="Tree Models">
+                  <option value="decision_tree"      {% if post.algo_type == 'decision_tree'      %}selected{% endif %}>Decision Tree</option>
+                  <option value="random_forest"      {% if post.algo_type == 'random_forest'      %}selected{% endif %}>Random Forest</option>
+                  <option value="gradient_boosting"  {% if post.algo_type == 'gradient_boosting'  %}selected{% endif %}>Gradient Boosting</option>
+                </optgroup>
+                <optgroup label="Other">
+                  <option value="svm"                {% if post.algo_type == 'svm'                %}selected{% endif %}>Support Vector Machine</option>
+                  <option value="knn"                {% if post.algo_type == 'knn'                %}selected{% endif %}>K-Nearest Neighbors</option>
+                  <option value="naive_bayes"        {% if post.algo_type == 'naive_bayes'        %}selected{% endif %}>Naive Bayes</option>
+                  <option value="neural_network"     {% if post.algo_type == 'neural_network'     %}selected{% endif %}>Neural Network (MLP)</option>
+                </optgroup>
+              </select>
+            </div>
+
+            <div class="col-12">
+              <label class="form-label">Description</label>
+              <input type="text" name="algo_desc"
+                     value="{{ post.algo_desc|default:'' }}"
+                     class="form-control"
+                     placeholder="Short description (optional)">
+            </div>
+
+          </div>
+
+          <!-- ── HYPERPARAMETERS (dynamic) ── -->
+          <div id="hyperparamSection" style="margin-top:20px">
+
+            <!-- Default message -->
+            <div id="defaultMsg"
+                 style="text-align:center;padding:20px;color:#64748b;
+                        background:rgba(255,255,255,0.02);border-radius:8px;
+                        border:1px dashed var(--border)">
+              <i class="fas fa-sliders-h"
+                 style="font-size:24px;display:block;margin-bottom:8px;opacity:0.4"></i>
+              Select an algorithm above to see hyperparameters
+            </div>
+
+            <!-- Ridge / Lasso -->
+            <div class="hyperparam-group" data-algo="ridge_regression" style="display:none">
+              <div class="form-section-title mt-0"><i class="fas fa-sliders-h"></i> Hyperparameters</div>
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label class="form-label">Lambda α (Regularization)</label>
+                  <input type="number" name="alpha" step="0.01" min="0"
+                         value="{{ post.alpha|default:'1.0' }}"
+                         class="form-control" placeholder="1.0">
+                  <div style="font-size:11px;color:#64748b;margin-top:3px">Higher = more regularization</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="hyperparam-group" data-algo="lasso_regression" style="display:none">
+              <div class="form-section-title mt-0"><i class="fas fa-sliders-h"></i> Hyperparameters</div>
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label class="form-label">Lambda α</label>
+                  <input type="number" name="alpha" step="0.01" min="0"
+                         value="{{ post.alpha|default:'1.0' }}"
+                         class="form-control" placeholder="1.0">
+                </div>
+              </div>
+            </div>
+
+            <!-- Random Forest -->
+            <div class="hyperparam-group" data-algo="random_forest" style="display:none">
+              <div class="form-section-title mt-0"><i class="fas fa-sliders-h"></i> Hyperparameters</div>
+              <div class="row g-3">
+                <div class="col-md-4">
+                  <label class="form-label">Number of Trees</label>
+                  <input type="number" name="n_estimators" min="1"
+                         value="{{ post.n_estimators|default:'100' }}"
+                         class="form-control" placeholder="100">
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">Max Depth</label>
+                  <input type="number" name="max_depth" min="1"
+                         value="{{ post.max_depth|default:'' }}"
+                         class="form-control" placeholder="None = unlimited">
+                </div>
+              </div>
+            </div>
+
+            <!-- Gradient Boosting -->
+            <div class="hyperparam-group" data-algo="gradient_boosting" style="display:none">
+              <div class="form-section-title mt-0"><i class="fas fa-sliders-h"></i> Hyperparameters</div>
+              <div class="row g-3">
+                <div class="col-md-4">
+                  <label class="form-label">Estimators</label>
+                  <input type="number" name="n_estimators" min="1"
+                         value="{{ post.n_estimators|default:'100' }}"
+                         class="form-control">
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">Learning Rate</label>
+                  <input type="number" name="learning_rate" step="0.01" min="0.001"
+                         value="{{ post.learning_rate|default:'0.1' }}"
+                         class="form-control">
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">Max Depth</label>
+                  <input type="number" name="max_depth" min="1"
+                         value="{{ post.max_depth|default:'3' }}"
+                         class="form-control">
+                </div>
+              </div>
+            </div>
+
+            <!-- Decision Tree -->
+            <div class="hyperparam-group" data-algo="decision_tree" style="display:none">
+              <div class="form-section-title mt-0"><i class="fas fa-sliders-h"></i> Hyperparameters</div>
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label class="form-label">Max Depth</label>
+                  <input type="number" name="max_depth" min="1"
+                         value="{{ post.max_depth|default:'5' }}"
+                         class="form-control" placeholder="5">
+                </div>
+              </div>
+            </div>
+
+            <!-- SVM -->
+            <div class="hyperparam-group" data-algo="svm" style="display:none">
+              <div class="form-section-title mt-0"><i class="fas fa-sliders-h"></i> Hyperparameters</div>
+              <div class="row g-3">
+                <div class="col-md-4">
+                  <label class="form-label">C (Regularization)</label>
+                  <input type="number" name="C" step="0.1" min="0.01"
+                         value="{{ post.C|default:'1.0' }}"
+                         class="form-control">
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">Kernel</label>
+                  <select name="kernel" class="form-select">
+                    <option value="rbf"    {% if post.kernel == 'rbf'    %}selected{% endif %}>RBF</option>
+                    <option value="linear" {% if post.kernel == 'linear' %}selected{% endif %}>Linear</option>
+                    <option value="poly"   {% if post.kernel == 'poly'   %}selected{% endif %}>Polynomial</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- Neural Network -->
+            <div class="hyperparam-group" data-algo="neural_network" style="display:none">
+              <div class="form-section-title mt-0"><i class="fas fa-sliders-h"></i> Hyperparameters</div>
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label class="form-label">Hidden Neurons</label>
+                  <input type="text" name="hidden_layers"
+                         value="{{ post.hidden_layers|default:'100,50' }}"
+                         class="form-control" placeholder="e.g. 100,50,25">
+                  <div style="font-size:11px;color:#64748b;margin-top:3px">
+                    Comma-separated layer sizes
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Max Iterations</label>
+                  <input type="number" name="max_iter" min="100"
+                         value="{{ post.max_iter|default:'500' }}"
+                         class="form-control">
+                </div>
+              </div>
+            </div>
+
+            <!-- KNN -->
+            <div class="hyperparam-group" data-algo="knn" style="display:none">
+              <div class="form-section-title mt-0"><i class="fas fa-sliders-h"></i> Hyperparameters</div>
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label class="form-label">Number of Neighbors (k)</label>
+                  <input type="number" name="n_neighbors" min="1"
+                         value="{{ post.n_neighbors|default:'5' }}"
+                         class="form-control">
+                </div>
+              </div>
+            </div>
+
+            <!-- Linear Regression / Naive Bayes — no params -->
+            <div class="hyperparam-group" data-algo="linear_regression" style="display:none">
+              <div style="padding:16px;background:rgba(255,255,255,0.02);
+                          border-radius:8px;border:1px solid var(--border);
+                          text-align:center;color:#64748b;font-size:13px">
+                <i class="fas fa-check-circle" style="color:#34d399;margin-right:6px"></i>
+                Linear Regression has no configurable hyperparameters.
+              </div>
+            </div>
+
+            <div class="hyperparam-group" data-algo="naive_bayes" style="display:none">
+              <div style="padding:16px;background:rgba(255,255,255,0.02);
+                          border-radius:8px;border:1px solid var(--border);
+                          text-align:center;color:#64748b;font-size:13px">
+                <i class="fas fa-check-circle" style="color:#34d399;margin-right:6px"></i>
+                Naive Bayes has no configurable hyperparameters.
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- ── STEP 3: SUBMIT ────────────────────────────────────── -->
+      <div class="card">
+        <div class="card-header">
+          <h5>
+            <span style="background:linear-gradient(135deg,#059669,#10b981);
+                         color:#fff;border-radius:50%;width:26px;height:26px;
+                         display:inline-flex;align-items:center;justify-content:center;
+                         font-size:12px;font-weight:800;margin-right:10px">3</span>
+            Run Experiment
+          </h5>
+        </div>
+        <div class="card-body">
+          <div style="background:rgba(79,70,229,0.07);border:1px solid rgba(79,70,229,0.2);
+                      border-radius:10px;padding:14px 18px;margin-bottom:16px;
+                      font-size:13px;color:#94a3b8">
+            <i class="fas fa-info-circle me-2" style="color:#818cf8"></i>
+            Clicking <strong style="color:#a5b4fc">Run Experiment</strong> will:
+            upload &amp; preprocess the dataset →
+            save the algorithm config →
+            train the model with 5-fold cross-validation →
+            show results instantly.
+          </div>
+          <button type="submit"
+                  class="btn btn-primary w-100"
+                  style="padding:14px;font-size:16px;letter-spacing:0.3px"
+                  id="submitBtn">
+            <i class="fas fa-rocket me-2"></i> Run Experiment
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT COLUMN — summary panel -->
+    <div class="col-lg-4">
+
+      <!-- Auto Preprocessing -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5><i class="fas fa-magic me-2" style="color:#06b6d4"></i>Auto Preprocessing</h5>
+        </div>
+        <div class="card-body" style="display:flex;flex-direction:column;gap:10px">
+          {% for step, icon, color in preprocess_steps %}
+          <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;
+                      background:rgba(255,255,255,0.03);border-radius:8px;
+                      border:1px solid var(--border)">
+            <div style="width:34px;height:34px;background:{{ color }};border-radius:8px;
+                        display:flex;align-items:center;justify-content:center;font-size:16px">
+              {{ icon }}
+            </div>
+            <div style="font-size:12px;color:#94a3b8">{{ step }}</div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Algorithm quick-ref -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5><i class="fas fa-graduation-cap me-2" style="color:#7c3aed"></i>Algorithm Guide</h5>
+        </div>
+        <div class="card-body" style="font-size:12px;color:#94a3b8;
+                                       display:flex;flex-direction:column;gap:8px">
+          <div style="padding:8px 10px;background:rgba(255,255,255,0.02);
+                      border-radius:6px;border-left:3px solid #4f46e5">
+            <strong style="color:#818cf8">Classification:</strong>
+            Random Forest, Decision Tree, Neural Network, KNN, Naive Bayes, SVM
+          </div>
+          <div style="padding:8px 10px;background:rgba(255,255,255,0.02);
+                      border-radius:6px;border-left:3px solid #0891b2">
+            <strong style="color:#22d3ee">Regression:</strong>
+            Linear, Ridge, Lasso, Gradient Boosting, SVM, Neural Network
+          </div>
+          <div style="padding:8px 10px;background:rgba(255,255,255,0.02);
+                      border-radius:6px;border-left:3px solid #059669">
+            <strong style="color:#34d399">Evaluation:</strong>
+            80/20 split + 5-fold cross-validation automatic
+          </div>
+        </div>
+      </div>
+
+      <!-- Example inputs -->
+      <div class="card">
+        <div class="card-header">
+          <h5><i class="fas fa-lightbulb me-2" style="color:#f59e0b"></i>Quick Fill Example</h5>
+        </div>
+        <div class="card-body" style="display:flex;flex-direction:column;gap:8px">
+          <button type="button" onclick="fillClassificationExample()"
+                  class="btn btn-outline-primary btn-sm">
+            <i class="fas fa-fill-drip me-1"></i> Fill Classification Example
+          </button>
+          <button type="button" onclick="fillRegressionExample()"
+                  class="btn btn-outline-primary btn-sm">
+            <i class="fas fa-fill-drip me-1"></i> Fill Regression Example
+          </button>
+          <div style="font-size:11px;color:#475569;margin-top:4px">
+            Examples pre-fill the form fields. You still need to upload a CSV file.
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</form>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ── File upload label ────────────────────────────────────────────────
+const fileInput = document.getElementById('fileInput');
+fileInput.style.display = 'none';
+fileInput.addEventListener('change', function () {
+  if (this.files.length) {
+    document.querySelector('.upload-label').innerHTML =
+      `<i class="fas fa-check-circle" style="color:#34d399;margin-right:8px"></i>${this.files[0].name}`;
+    document.getElementById('uploadZone').style.borderColor = '#4f46e5';
+  }
+});
+
+// ── Algorithm hyperparameter toggle ─────────────────────────────────
+const algoSelect = document.getElementById('algorithm_type_select');
+algoSelect.addEventListener('change', function () {
+  toggleHyperparams(this.value);
+});
+// On page load (if editing)
+if (algoSelect.value) toggleHyperparams(algoSelect.value);
+
+// ── Submit loading state ─────────────────────────────────────────────
+document.getElementById('experimentForm').addEventListener('submit', function () {
+  const btn = document.getElementById('submitBtn');
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Processing... Please wait';
+  btn.disabled = true;
+});
+
+// ── Quick fill helpers ───────────────────────────────────────────────
+function fillClassificationExample() {
+  document.querySelector('[name=ds_name]').value       = 'Loan Approval Dataset';
+  document.querySelector('[name=domain]').value        = 'Finance';
+  document.querySelector('[name=task_type]').value     = 'classification';
+  document.querySelector('[name=target_column]').value = 'loan_approved';
+  document.querySelector('[name=version]').value       = '1.0';
+  document.querySelector('[name=algo_name]').value     = 'Random Forest Classifier';
+  algoSelect.value = 'random_forest';
+  toggleHyperparams('random_forest');
+  document.querySelector('[name=n_estimators]').value  = '100';
+  showToast('Classification example filled!', 'success');
+}
+
+function fillRegressionExample() {
+  document.querySelector('[name=ds_name]').value       = 'House Price Prediction';
+  document.querySelector('[name=domain]').value        = 'Real Estate';
+  document.querySelector('[name=task_type]').value     = 'regression';
+  document.querySelector('[name=target_column]').value = 'price';
+  document.querySelector('[name=version]').value       = '1.0';
+  document.querySelector('[name=algo_name]').value     = 'Ridge Regression';
+  algoSelect.value = 'ridge_regression';
+  toggleHyperparams('ridge_regression');
+  document.querySelector('[name=alpha]').value         = '1.0';
+  showToast('Regression example filled!', 'success');
+}
+</script>
+{% endblock %}

@@ -1,0 +1,173 @@
+{% extends 'base.html' %}
+{% block title %}Performance Dashboard{% endblock %}
+{% block page_title %}Performance Dashboard{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div><h1>Performance Dashboard</h1><p>Color-coded comparison across all trained models</p></div>
+  <a href="{% url 'exports:export_results_pdf' %}" class="btn btn-primary"><i class="fas fa-file-pdf"></i> Export Full Report</a>
+</div>
+
+<!-- Legend -->
+<div class="card mb-4">
+  <div class="card-body" style="padding:14px 22px">
+    <div class="d-flex align-items-center gap-4 flex-wrap" style="font-size:12px">
+      <span style="font-weight:700;color:#94a3b8">Color Legend:</span>
+      <span><span style="display:inline-block;width:12px;height:12px;background:#34d399;border-radius:3px;margin-right:5px"></span>Best value</span>
+      <span><span style="display:inline-block;width:12px;height:12px;background:#f87171;border-radius:3px;margin-right:5px"></span>Worst value</span>
+      <span><span style="display:inline-block;width:12px;height:12px;background:#818cf8;border-radius:3px;margin-right:5px"></span>Classification metric</span>
+      <span><span style="display:inline-block;width:12px;height:12px;background:#22d3ee;border-radius:3px;margin-right:5px"></span>Regression metric</span>
+    </div>
+  </div>
+</div>
+
+<!-- Filters -->
+<div class="card mb-4">
+  <div class="card-body">
+    <form method="get" class="row g-3 align-items-end">
+      <div class="col-md-3">
+        <label class="form-label">Dataset</label>
+        <select name="dataset" class="form-select">
+          <option value="">All Datasets</option>
+          {% for ds in datasets %}
+          <option value="{{ ds.pk }}" {% if dataset_filter == ds.pk|stringformat:"s" %}selected{% endif %}>{{ ds.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Algorithm</label>
+        <select name="algorithm" class="form-select">
+          <option value="">All Algorithms</option>
+          {% for a in algorithms %}
+          <option value="{{ a.pk }}" {% if algo_filter == a.pk|stringformat:"s" %}selected{% endif %}>{{ a.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Task Type</label>
+        <select name="task" class="form-select">
+          <option value="">All Tasks</option>
+          {% for val, label in task_choices %}
+          <option value="{{ val }}" {% if task_filter == val %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-3 d-flex gap-2">
+        <button type="submit" class="btn btn-primary flex-fill"><i class="fas fa-filter"></i> Filter</button>
+        <a href="{% url 'dashboard:performance' %}" class="btn btn-outline-primary"><i class="fas fa-times"></i></a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Results Table -->
+<div class="card">
+  <div class="card-header">
+    <h5><i class="fas fa-table me-2" style="color:#4f46e5"></i>Experiment Results
+      <span class="badge-custom badge-primary ms-2">{{ results|length }} experiments</span>
+    </h5>
+  </div>
+  <div style="overflow-x:auto">
+    <table class="table-dark-custom">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Algorithm</th>
+          <th>Dataset</th>
+          <th>Task</th>
+          <th style="color:#818cf8">Accuracy ↑</th>
+          <th style="color:#a78bfa">F1-Score ↑</th>
+          <th style="color:#22d3ee">RMSE ↓</th>
+          <th style="color:#67e8f9">MAE ↓</th>
+          <th style="color:#34d399">R² ↑</th>
+          <th>CV Folds</th>
+          <th>Time(s)</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in results %}
+        <tr>
+          <td style="color:#64748b;font-size:11px">{{ forloop.counter }}</td>
+          <td>
+            <div style="font-weight:700;color:#e2e8f0;font-size:13px">{{ r.algorithm_config.name }}</div>
+            <div style="font-size:10px;color:#64748b">{{ r.created_at|date:"M d, Y" }}</div>
+          </td>
+          <td>
+            <div style="color:#94a3b8;font-size:12px">{{ r.dataset.name|truncatechars:22 }}</div>
+          </td>
+          <td>
+            <span class="badge-custom {% if r.dataset.task_type == 'classification' %}badge-primary{% elif r.dataset.task_type == 'regression' %}badge-success{% else %}badge-warning{% endif %}" style="font-size:10px">
+              {{ r.dataset.get_task_type_display }}
+            </span>
+          </td>
+          <!-- Accuracy -->
+          <td>
+            {% if r.accuracy %}
+              <span style="font-weight:700;font-size:13px;color:{% if r.id == best_accuracy_id %}#34d399{% else %}#818cf8{% endif %}">
+                {{ r.accuracy|floatformat:4 }}
+                {% if r.id == best_accuracy_id %}<i class="fas fa-crown" style="font-size:10px;margin-left:3px"></i>{% endif %}
+              </span>
+            {% else %}<span style="color:#334155">—</span>{% endif %}
+          </td>
+          <!-- F1 -->
+          <td>
+            {% if r.f1_score %}
+              <span style="font-weight:600;font-size:13px;color:{% if r.id == best_f1_id %}#34d399{% else %}#a78bfa{% endif %}">
+                {{ r.f1_score|floatformat:4 }}
+                {% if r.id == best_f1_id %}<i class="fas fa-crown" style="font-size:10px;margin-left:3px"></i>{% endif %}
+              </span>
+            {% else %}<span style="color:#334155">—</span>{% endif %}
+          </td>
+          <!-- RMSE -->
+          <td>
+            {% if r.rmse %}
+              <span style="font-weight:600;font-size:13px;color:{% if r.id == best_rmse_id %}#34d399{% else %}#22d3ee{% endif %}">
+                {{ r.rmse|floatformat:4 }}
+                {% if r.id == best_rmse_id %}<i class="fas fa-crown" style="font-size:10px;margin-left:3px"></i>{% endif %}
+              </span>
+            {% else %}<span style="color:#334155">—</span>{% endif %}
+          </td>
+          <!-- MAE -->
+          <td>
+            {% if r.mae %}
+              <span style="font-weight:600;font-size:13px;color:{% if r.id == best_mae_id %}#34d399{% else %}#67e8f9{% endif %}">
+                {{ r.mae|floatformat:4 }}
+                {% if r.id == best_mae_id %}<i class="fas fa-crown" style="font-size:10px;margin-left:3px"></i>{% endif %}
+              </span>
+            {% else %}<span style="color:#334155">—</span>{% endif %}
+          </td>
+          <!-- R2 -->
+          <td>
+            {% if r.r2_score %}
+              <span style="color:#34d399;font-size:13px">{{ r.r2_score|floatformat:4 }}</span>
+            {% else %}<span style="color:#334155">—</span>{% endif %}
+          </td>
+          <!-- CV -->
+          <td>
+            {% if r.cv_scores %}
+              <div style="font-size:11px;color:#94a3b8">{{ r.cv_scores|length }} folds</div>
+              <div style="font-size:10px;color:#64748b">Click detail to drill-down</div>
+            {% else %}<span style="color:#334155">—</span>{% endif %}
+          </td>
+          <td style="color:#64748b;font-size:12px">{{ r.training_time|floatformat:3 }}s</td>
+          <td>
+            <div class="d-flex gap-1">
+              <a href="{% url 'dashboard:results_detail' r.pk %}" class="btn btn-sm btn-outline-primary" title="View Detail"><i class="fas fa-eye"></i></a>
+              <a href="{% url 'exports:export_plot' r.pk %}?format=png" class="btn btn-sm" style="background:rgba(16,185,129,0.15);color:#34d399;border:1px solid rgba(16,185,129,0.3)" title="Export PNG"><i class="fas fa-image"></i></a>
+              <a href="{% url 'exports:export_plot' r.pk %}?format=svg" class="btn btn-sm" style="background:rgba(6,182,212,0.15);color:#22d3ee;border:1px solid rgba(6,182,212,0.3)" title="Export SVG"><i class="fas fa-vector-square"></i></a>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="12" style="text-align:center;padding:60px;color:#64748b">
+            <i class="fas fa-chart-bar" style="font-size:40px;display:block;margin-bottom:14px;opacity:0.3"></i>
+            No results found. <a href="{% url 'algorithms:train_model' %}" style="color:#818cf8">Train your first model →</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

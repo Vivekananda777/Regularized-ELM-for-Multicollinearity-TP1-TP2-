@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% block title %}Schedule Benchmark{% endblock %}
+{% block page_title %}Schedule Benchmark{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div><h1>Schedule Benchmark Job</h1><p>Run batch experiments across datasets and algorithms</p></div>
+  <a href="{% url 'dashboard:benchmark_monitor' %}" class="btn btn-outline-primary"><i class="fas fa-list"></i> Monitor Jobs</a>
+</div>
+<form method="post">
+  {% csrf_token %}
+  <div class="row g-4">
+    <div class="col-md-8">
+      <div class="card mb-4">
+        <div class="card-header"><h5><i class="fas fa-tag me-2" style="color:#4f46e5"></i>Job Details</h5></div>
+        <div class="card-body">
+          <label class="form-label">Job Name</label>
+          <input type="text" name="name" class="form-control" placeholder="e.g. Q4 Benchmark Suite" required>
+        </div>
+      </div>
+      <div class="card mb-4">
+        <div class="card-header"><h5><i class="fas fa-database me-2" style="color:#7c3aed"></i>Select Datasets</h5></div>
+        <div class="card-body">
+          <div class="row g-2">
+            {% for ds in datasets %}
+            <div class="col-md-6">
+              <label style="display:flex;align-items:center;gap:10px;padding:12px;background:rgba(255,255,255,0.03);border-radius:8px;border:1px solid var(--border);cursor:pointer">
+                <input type="checkbox" name="datasets" value="{{ ds.pk }}" class="form-check-input">
+                <div>
+                  <div style="font-weight:600;color:#e2e8f0;font-size:13px">{{ ds.name }}</div>
+                  <div style="font-size:11px;color:#64748b">{{ ds.get_task_type_display }} · {{ ds.rows }} rows</div>
+                </div>
+              </label>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><h5><i class="fas fa-cogs me-2" style="color:#06b6d4"></i>Select Algorithms</h5></div>
+        <div class="card-body">
+          <div class="row g-2">
+            {% for algo in algorithms %}
+            <div class="col-md-6">
+              <label style="display:flex;align-items:center;gap:10px;padding:12px;background:rgba(255,255,255,0.03);border-radius:8px;border:1px solid var(--border);cursor:pointer">
+                <input type="checkbox" name="algorithms" value="{{ algo.pk }}" class="form-check-input">
+                <div>
+                  <div style="font-weight:600;color:#e2e8f0;font-size:13px">{{ algo.name }}</div>
+                  <div style="font-size:11px;color:#64748b">{{ algo.get_algorithm_type_display }}</div>
+                </div>
+              </label>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card">
+        <div class="card-body" style="padding:24px">
+          <button type="submit" class="btn btn-primary w-100 mb-2" style="padding:13px;font-size:15px">
+            <i class="fas fa-calendar-check"></i> Schedule Job
+          </button>
+          <a href="{% url 'dashboard:benchmark_monitor' %}" class="btn btn-outline-primary w-100">Cancel</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>
+{% endblock %}

@@ -1,0 +1,283 @@
+{% extends 'base.html' %}
+{% block title %}Register — ML Benchmark{% endblock %}
+{% block auth_content %}
+
+<div class="login-page" style="min-height:100vh;padding:40px 20px;align-items:flex-start">
+  <div class="login-card" style="max-width:540px;width:100%;margin:auto;padding:44px 40px">
+
+    <!-- Header -->
+    <div class="login-logo">🧠</div>
+    <h2 style="text-align:center;font-weight:800;font-size:22px;color:#f1f5f9;margin-bottom:4px">
+      Create Account
+    </h2>
+    <p style="text-align:center;color:#64748b;font-size:13px;margin-bottom:30px">
+      ML Benchmark Research Platform
+    </p>
+
+    <!-- Info banner -->
+    <div style="background:rgba(79,70,229,0.08);border:1px solid rgba(79,70,229,0.2);
+                border-radius:8px;padding:10px 14px;margin-bottom:20px;
+                display:flex;align-items:center;gap:10px">
+      <i class="fas fa-info-circle" style="color:#818cf8;font-size:15px;flex-shrink:0"></i>
+      <span style="font-size:12px;color:#94a3b8">
+        New accounts are created as <strong style="color:#a5b4fc">User</strong>.
+        Contact an admin to upgrade your role.
+      </span>
+    </div>
+
+    <!-- Flash messages -->
+    {% if messages %}
+      {% for msg in messages %}
+        <div class="alert-custom alert-{{ msg.tags }}"
+             style="margin-bottom:16px;display:flex;align-items:center;gap:10px">
+          <i class="fas fa-info-circle"></i>
+          <span>{{ msg }}</span>
+        </div>
+      {% endfor %}
+    {% endif %}
+
+    <form method="post" novalidate>
+      {% csrf_token %}
+
+      <!-- Personal Information -->
+      <div class="form-section">
+        <div class="form-section-title">
+          <i class="fas fa-user"></i> Personal Information
+        </div>
+        <div class="row g-3">
+
+          <div class="col-6">
+            <label class="form-label">
+              First Name <span style="color:#f87171">*</span>
+            </label>
+            <input type="text"
+                   name="first_name"
+                   value="{{ form.first_name.value|default:'' }}"
+                   class="form-control"
+                   placeholder="e.g. Gayathri"
+                   required>
+            {% if form.first_name.errors %}
+              <div style="color:#f87171;font-size:11px;margin-top:3px">
+                {{ form.first_name.errors.0 }}
+              </div>
+            {% endif %}
+          </div>
+
+          <div class="col-6">
+            <label class="form-label">
+              Last Name <span style="color:#f87171">*</span>
+            </label>
+            <input type="text"
+                   name="last_name"
+                   value="{{ form.last_name.value|default:'' }}"
+                   class="form-control"
+                   placeholder="e.g. Sharma"
+                   required>
+            {% if form.last_name.errors %}
+              <div style="color:#f87171;font-size:11px;margin-top:3px">
+                {{ form.last_name.errors.0 }}
+              </div>
+            {% endif %}
+          </div>
+
+          <div class="col-12">
+            <label class="form-label">
+              Email Address <span style="color:#f87171">*</span>
+            </label>
+            <input type="email"
+                   name="email"
+                   value="{{ form.email.value|default:'' }}"
+                   class="form-control"
+                   placeholder="e.g. user@example.com"
+                   required>
+            {% if form.email.errors %}
+              <div style="color:#f87171;font-size:11px;margin-top:3px">
+                {{ form.email.errors.0 }}
+              </div>
+            {% endif %}
+          </div>
+
+          <div class="col-12">
+            <label class="form-label">Department
+              <span style="color:#64748b;font-size:11px;font-weight:400">(optional)</span>
+            </label>
+            <input type="text"
+                   name="department"
+                   value="{{ form.department.value|default:'' }}"
+                   class="form-control"
+                   placeholder="e.g. Computer Science">
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Account Details -->
+      <div class="form-section">
+        <div class="form-section-title">
+          <i class="fas fa-id-card"></i> Account Details
+        </div>
+        <div class="row g-3">
+
+          <div class="col-12">
+            <label class="form-label">
+              Username <span style="color:#f87171">*</span>
+            </label>
+            <input type="text"
+                   name="username"
+                   value="{{ form.username.value|default:'' }}"
+                   class="form-control"
+                   placeholder="Choose a unique username"
+                   required>
+            {% if form.username.errors %}
+              <div style="color:#f87171;font-size:11px;margin-top:3px">
+                {{ form.username.errors.0 }}
+              </div>
+            {% endif %}
+            <div style="font-size:11px;color:#64748b;margin-top:3px">
+              Letters, digits and @/./+/-/_ only.
+            </div>
+          </div>
+
+          <!-- Role display only — not editable -->
+          <div class="col-12">
+            <label class="form-label">Role</label>
+            <div class="form-control"
+                 style="background:rgba(255,255,255,0.03);
+                        color:#94a3b8;
+                        cursor:not-allowed;
+                        display:flex;align-items:center;gap:8px">
+              <span style="display:inline-block;width:8px;height:8px;
+                           background:#34d399;border-radius:50%"></span>
+              User
+              <span style="margin-left:auto;font-size:11px;color:#475569">
+                Auto-assigned
+              </span>
+            </div>
+            <div style="font-size:11px;color:#64748b;margin-top:3px">
+              Admin can upgrade your role after registration.
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Password -->
+      <div class="form-section">
+        <div class="form-section-title">
+          <i class="fas fa-lock"></i> Set Password
+        </div>
+        <div class="row g-3">
+
+          <div class="col-12">
+            <label class="form-label">
+              Password <span style="color:#f87171">*</span>
+            </label>
+            <input type="password"
+                   name="password1"
+                   class="form-control"
+                   placeholder="Create a strong password"
+                   id="id_password1"
+                   required>
+            {% if form.password1.errors %}
+              <div style="color:#f87171;font-size:11px;margin-top:3px">
+                {{ form.password1.errors.0 }}
+              </div>
+            {% endif %}
+            <div style="margin-top:8px;padding:10px 12px;
+                        background:rgba(79,70,229,0.07);
+                        border-radius:8px;
+                        border:1px solid rgba(79,70,229,0.15)">
+              <div style="font-size:11px;color:#64748b;font-weight:600;margin-bottom:4px">
+                Password must:
+              </div>
+              <ul style="margin:0;padding-left:16px;font-size:11px;color:#64748b;line-height:1.9">
+                <li>Be at least 8 characters long</li>
+                <li>Not be entirely numeric</li>
+                <li>Not be too similar to your username</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="col-12">
+            <label class="form-label">
+              Confirm Password <span style="color:#f87171">*</span>
+            </label>
+            <input type="password"
+                   name="password2"
+                   class="form-control"
+                   placeholder="Repeat your password"
+                   id="id_password2"
+                   required>
+            {% if form.password2.errors %}
+              <div style="color:#f87171;font-size:11px;margin-top:3px">
+                {{ form.password2.errors.0 }}
+              </div>
+            {% endif %}
+            <div id="pwMatch" style="font-size:11px;margin-top:4px;display:none"></div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Non-field errors -->
+      {% if form.non_field_errors %}
+        <div class="alert-custom alert-danger" style="margin-bottom:16px">
+          <i class="fas fa-exclamation-circle"></i>
+          <span>{{ form.non_field_errors.0 }}</span>
+        </div>
+      {% endif %}
+
+      <!-- Submit -->
+      <button type="submit"
+              class="btn btn-primary w-100"
+              style="padding:13px;font-size:15px;margin-top:8px;margin-bottom:14px">
+        <i class="fas fa-user-plus me-2"></i> Create Account
+      </button>
+
+      <!-- Login link -->
+      <div style="text-align:center;
+                  padding-top:14px;
+                  border-top:1px solid var(--border)">
+        <span style="color:#64748b;font-size:13px">Already have an account?</span>
+        <a href="{% url 'accounts:login' %}"
+           style="color:#818cf8;text-decoration:none;font-weight:600;margin-left:6px">
+          Sign In →
+        </a>
+      </div>
+
+    </form>
+
+    <!-- Footer -->
+    <div style="margin-top:24px;text-align:center">
+      <p style="font-size:11px;color:#475569;margin:0">
+        ML Benchmark Platform &copy; 2024 — All rights reserved
+      </p>
+    </div>
+
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  const p1 = document.getElementById('id_password1');
+  const p2 = document.getElementById('id_password2');
+  const indicator = document.getElementById('pwMatch');
+
+  function checkMatch() {
+    if (!p2.value) { indicator.style.display = 'none'; return; }
+    indicator.style.display = 'block';
+    if (p1.value === p2.value) {
+      indicator.innerHTML = '<i class="fas fa-check-circle" style="color:#34d399;margin-right:4px"></i><span style="color:#34d399">Passwords match</span>';
+    } else {
+      indicator.innerHTML = '<i class="fas fa-times-circle" style="color:#f87171;margin-right:4px"></i><span style="color:#f87171">Passwords do not match</span>';
+    }
+  }
+
+  if (p1 && p2) {
+    p1.addEventListener('input', checkMatch);
+    p2.addEventListener('input', checkMatch);
+  }
+</script>
+{% endblock %}

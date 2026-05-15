@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+{% block title %}Upload Dataset{% endblock %}
+{% block page_title %}Upload Dataset{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div><h1>Upload Dataset</h1><p>Upload CSV, Excel, or JSON files for analysis</p></div>
+  <a href="{% url 'datasets:dataset_list' %}" class="btn btn-outline-primary"><i class="fas fa-arrow-left"></i> Back</a>
+</div>
+
+<form method="post" enctype="multipart/form-data">
+  {% csrf_token %}
+  <div class="row g-4">
+    <div class="col-md-8">
+      <!-- File Upload -->
+      <div class="card mb-4">
+        <div class="card-header"><h5><i class="fas fa-cloud-upload-alt me-2" style="color:#4f46e5"></i>Dataset File</h5></div>
+        <div class="card-body">
+          <div class="upload-zone" id="uploadZone">
+            <i class="fas fa-file-csv" style="font-size:48px;color:#4f46e5;margin-bottom:16px"></i>
+            <div class="upload-label" style="color:#e2e8f0;font-weight:600;margin-bottom:8px">Click or drag & drop your file here</div>
+            <div style="color:#64748b;font-size:13px">Supports CSV, XLSX, XLS, JSON</div>
+            {{ form.file }}
+          </div>
+          {% if form.file.errors %}
+            <div style="color:#f87171;font-size:12px;margin-top:6px">{{ form.file.errors.0 }}</div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Dataset Info -->
+      <div class="card">
+        <div class="card-header"><h5><i class="fas fa-info-circle me-2" style="color:#7c3aed"></i>Dataset Information</h5></div>
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">Dataset Name *</label>
+              {{ form.name }}
+              {% if form.name.errors %}<div style="color:#f87171;font-size:12px">{{ form.name.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Domain *</label>
+              {{ form.domain }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Task Type *</label>
+              {{ form.task_type }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Version</label>
+              {{ form.version }}
+            </div>
+            <div class="col-12">
+              <label class="form-label">Target Column</label>
+              {{ form.target_column }}
+              <div style="color:#64748b;font-size:11px;margin-top:4px">The column to predict (for supervised learning)</div>
+            </div>
+            <div class="col-12">
+              <label class="form-label">Description</label>
+              {{ form.description }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card mb-4">
+        <div class="card-header"><h5><i class="fas fa-magic me-2" style="color:#06b6d4"></i>Auto Preprocessing</h5></div>
+        <div class="card-body">
+          <div style="display:flex;flex-direction:column;gap:12px">
+            {% for step, icon, color in preprocess_steps %}
+            <div style="display:flex;align-items:center;gap:12px;padding:12px;background:rgba(255,255,255,0.03);border-radius:8px;border:1px solid var(--border)">
+              <div style="width:36px;height:36px;background:{{ color }};border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px">{{ icon }}</div>
+              <div style="font-size:13px;color:#94a3b8">{{ step }}</div>
+            </div>
+            {% endfor %}
+          </div>
+          <div style="margin-top:16px;padding:12px;background:rgba(79,70,229,0.1);border-radius:8px;border:1px solid rgba(79,70,229,0.3)">
+            <div style="font-size:12px;color:#a5b4fc">A full preprocessing report is auto-generated after upload</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-body" style="padding:20px">
+          <button type="submit" class="btn btn-primary w-100" style="padding:13px;font-size:15px;margin-bottom:10px">
+            <i class="fas fa-upload"></i> Upload & Preprocess
+          </button>
+          <a href="{% url 'datasets:dataset_list' %}" class="btn btn-outline-primary w-100">Cancel</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const fileInput = document.querySelector('input[type="file"]');
+if (fileInput) {
+  fileInput.style.display = 'none';
+  fileInput.addEventListener('change', function() {
+    if (this.files.length) {
+      document.querySelector('.upload-label').textContent = this.files[0].name;
+      document.querySelector('.upload-zone').style.borderColor = '#4f46e5';
+    }
+  });
+}
+</script>
+{% endblock %}

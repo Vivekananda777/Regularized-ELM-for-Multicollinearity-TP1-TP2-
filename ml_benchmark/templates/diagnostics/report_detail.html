@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+{% block title %}VIF Report{% endblock %}
+{% block page_title %}Diagnostic Report{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>VIF Diagnostic Report</h1>
+    <p>{{ report.dataset.name }} · Generated {{ report.created_at|date:"M d, Y H:i" }}</p>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="{% url 'exports:export_diagnostic_pdf' report.pk %}" class="btn btn-primary"><i class="fas fa-file-pdf"></i> Download PDF</a>
+    <a href="{% url 'diagnostics:report_list' %}" class="btn btn-outline-primary"><i class="fas fa-arrow-left"></i> Back</a>
+  </div>
+</div>
+
+<div class="row g-4 mb-4">
+  <div class="col-md-4">
+    <div class="stat-card">
+      <div class="stat-icon" style="background:rgba(79,70,229,0.15)">📊</div>
+      <div class="stat-value">{{ vif_sorted|length }}</div>
+      <div class="stat-label">Features Analyzed</div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="stat-card">
+      <div class="stat-icon" style="background:rgba(239,68,68,0.15)">⚠️</div>
+      <div class="stat-value" style="color:{% if report.high_vif_features %}#f87171{% else %}#34d399{% endif %}">
+        {{ report.high_vif_features|length }}
+      </div>
+      <div class="stat-label">High VIF Features</div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="stat-card">
+      <div class="stat-icon" style="background:rgba(245,158,11,0.15)">🎯</div>
+      <div class="stat-value">{{ report.vif_threshold }}</div>
+      <div class="stat-label">VIF Threshold</div>
+    </div>
+  </div>
+</div>
+
+{% if report.high_vif_features %}
+<div class="alert-custom alert-warning mb-4">
+  <i class="fas fa-exclamation-triangle"></i>
+  <div>
+    <strong>High Multicollinearity Detected:</strong>
+    {{ report.high_vif_features|join:", " }} — Consider removing or combining these features.
+  </div>
+</div>
+{% else %}
+<div class="alert-custom alert-success mb-4">
+  <i class="fas fa-check-circle"></i>
+  <strong>No significant multicollinearity detected.</strong> All features are within the acceptable VIF range.
+</div>
+{% endif %}
+
+<div class="row g-4">
+  <div class="col-md-5">
+    <div class="card">
+      <div class="card-header"><h5><i class="fas fa-table me-2" style="color:#4f46e5"></i>VIF Scores</h5></div>
+      <div class="card-body" style="padding:0">
+        <table class="table-dark-custom">
+          <thead><tr><th>Feature</th><th>VIF Score</th><th>Status</th></tr></thead>
+          <tbody>
+            {% for feat, val in vif_sorted %}
+            <tr>
+              <td><strong style="color:#e2e8f0">{{ feat }}</strong></td>
+              <td>
+                <div style="margin-bottom:4px;font-weight:600;color:{% if val and val > report.vif_threshold %}#f87171{% elif val and val > 3 %}#fbbf24{% else %}#34d399{% endif %}">
+                  {{ val|default:'N/A' }}
+                </div>
+                <div class="vif-bar">
+                  <div class="vif-fill {% if val and val > report.vif_threshold %}vif-danger{% elif val and val > 3 %}vif-warn{% else %}vif-ok{% endif %}"
+                    style="width:{% if val %}{% widthratio val 20 100 %}%{% else %}0%{% endif %}"></div>
+                </div>
+              </td>
+              <td>
+                {% if val and val > report.vif_threshold %}
+                  <span class="badge-custom badge-danger">⚠ High</span>
+                {% elif val and val > 3 %}
+                  <span class="badge-custom badge-warning">⚡ Moderate</span>
+                {% else %}
+                  <span class="badge-custom badge-success">✓ OK</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-7">
+    {% if report.heatmap_image %}
+    <div class="card">
+      <div class="card-header"><h5><i class="fas fa-th me-2" style="color:#7c3aed"></i>Correlation Heatmap</h5></div>
+      <div class="card-body heatmap-container" style="padding:12px">
+        <img src="{{ report.heatmap_image.url }}" alt="Correlation Heatmap" style="width:100%;border-radius:8px">
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

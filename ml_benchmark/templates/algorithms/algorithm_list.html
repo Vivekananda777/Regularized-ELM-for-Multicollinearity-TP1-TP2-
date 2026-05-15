@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% block title %}Algorithms{% endblock %}
+{% block page_title %}Algorithm Configurations{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div><h1>Algorithms</h1><p>Manage ML algorithm configurations</p></div>
+  <a href="{% url 'algorithms:algorithm_create' %}" class="btn btn-primary"><i class="fas fa-plus"></i> New Config</a>
+</div>
+<div class="row g-4">
+  {% for algo in algorithms %}
+  <div class="col-md-4">
+    <div class="card">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-start mb-3">
+          <div>
+            <h5 style="color:#f1f5f9;font-weight:700;margin-bottom:4px">{{ algo.name }}</h5>
+            <span style="color:#64748b;font-size:12px">{{ algo.get_algorithm_type_display }}</span>
+          </div>
+          <span class="badge-custom {% if algo.status == 'enabled' %}badge-success{% else %}badge-danger{% endif %}">{{ algo.status }}</span>
+        </div>
+        <p style="color:#94a3b8;font-size:13px;margin-bottom:14px">{{ algo.description|default:'No description'|truncatechars:70 }}</p>
+        {% if algo.hyperparameters %}
+        <div style="background:rgba(255,255,255,0.03);border-radius:8px;padding:10px;margin-bottom:14px;border:1px solid var(--border)">
+          <div style="font-size:11px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">Hyperparameters</div>
+          {% for k, v in algo.hyperparameters.items %}
+          <div style="display:flex;justify-content:space-between;font-size:12px">
+            <span style="color:#94a3b8">{{ k }}</span>
+            <span style="color:#a5b4fc;font-weight:600">{{ v }}</span>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+        <div class="d-flex gap-2">
+          <a href="{% url 'algorithms:algorithm_edit' algo.pk %}" class="btn btn-sm btn-outline-primary"><i class="fas fa-edit"></i> Edit</a>
+          <a href="{% url 'algorithms:save_config' algo.pk %}" class="btn btn-sm btn-outline-primary"><i class="fas fa-bookmark"></i></a>
+          {% if request.user.role == 'admin' or request.user.is_superuser %}
+          <a href="{% url 'algorithms:algorithm_toggle' algo.pk %}" class="btn btn-sm {% if algo.status == 'enabled' %}btn-warning{% else %}btn-success{% endif %}">
+            <i class="fas fa-{% if algo.status == 'enabled' %}pause{% else %}play{% endif %}"></i>
+          </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+  {% empty %}
+  <div class="col-12">
+    <div class="card">
+      <div class="card-body text-center" style="padding:60px">
+        <i class="fas fa-cogs" style="font-size:48px;color:#334155;margin-bottom:16px"></i>
+        <h4 style="color:#64748b">No algorithms configured</h4>
+        <a href="{% url 'algorithms:algorithm_create' %}" class="btn btn-primary mt-3"><i class="fas fa-plus"></i> Add Algorithm</a>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

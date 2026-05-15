@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div><h1>{{ title }}</h1><p>Configure algorithm and hyperparameters</p></div>
+  <a href="{% url 'algorithms:algorithm_list' %}" class="btn btn-outline-primary"><i class="fas fa-arrow-left"></i> Back</a>
+</div>
+
+<form method="post">
+  {% csrf_token %}
+  <div class="row g-4">
+    <div class="col-md-7">
+      <div class="card mb-4">
+        <div class="card-header"><h5><i class="fas fa-cogs me-2" style="color:#4f46e5"></i>Algorithm Configuration</h5></div>
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-12">
+              <label class="form-label">Configuration Name *</label>
+              {{ form.name }}
+              {% if form.name.errors %}<div style="color:#f87171;font-size:12px">{{ form.name.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-12">
+              <label class="form-label">Algorithm Type *</label>
+              {{ form.algorithm_type }}
+            </div>
+            <div class="col-12">
+              <label class="form-label">Description</label>
+              {{ form.description }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hyperparameters -->
+      <div class="card">
+        <div class="card-header"><h5><i class="fas fa-sliders-h me-2" style="color:#7c3aed"></i>Hyperparameters</h5></div>
+        <div class="card-body">
+          <div class="hyperparam-group" data-algo="ridge_regression" style="display:none">
+            <div class="row g-3">
+              <div class="col-12"><label class="form-label">Lambda (α) — Regularization Strength</label>{{ form.alpha }}{% if form.alpha.errors %}<div style="color:#f87171;font-size:12px">{{ form.alpha.errors.0 }}</div>{% endif %}</div>
+            </div>
+          </div>
+          <div class="hyperparam-group" data-algo="lasso_regression" style="display:none">
+            <div class="row g-3">
+              <div class="col-12"><label class="form-label">Lambda (α)</label>{{ form.alpha }}</div>
+            </div>
+          </div>
+          <div class="hyperparam-group" data-algo="random_forest" style="display:none">
+            <div class="row g-3">
+              <div class="col-6"><label class="form-label">Number of Estimators</label>{{ form.n_estimators }}</div>
+              <div class="col-6"><label class="form-label">Max Depth (empty = unlimited)</label>{{ form.max_depth }}</div>
+            </div>
+          </div>
+          <div class="hyperparam-group" data-algo="gradient_boosting" style="display:none">
+            <div class="row g-3">
+              <div class="col-4"><label class="form-label">Estimators</label>{{ form.n_estimators }}</div>
+              <div class="col-4"><label class="form-label">Learning Rate</label>{{ form.learning_rate }}</div>
+              <div class="col-4"><label class="form-label">Max Depth</label>{{ form.max_depth }}</div>
+            </div>
+          </div>
+          <div class="hyperparam-group" data-algo="svm" style="display:none">
+            <div class="row g-3">
+              <div class="col-6"><label class="form-label">Regularization (C)</label>{{ form.C }}</div>
+              <div class="col-6"><label class="form-label">Kernel</label>{{ form.kernel }}</div>
+            </div>
+          </div>
+          <div class="hyperparam-group" data-algo="neural_network" style="display:none">
+            <div class="row g-3">
+              <div class="col-6"><label class="form-label">Hidden Neurons (comma-separated)</label>{{ form.hidden_layers }}</div>
+              <div class="col-6"><label class="form-label">Max Iterations</label>{{ form.max_iter }}</div>
+            </div>
+          </div>
+          <div class="hyperparam-group" data-algo="decision_tree" style="display:none">
+            <div class="row g-3">
+              <div class="col-12"><label class="form-label">Max Depth</label>{{ form.max_depth }}</div>
+            </div>
+          </div>
+          <div class="hyperparam-group" data-algo="knn" style="display:none">
+            <div class="row g-3">
+              <div class="col-12"><label class="form-label">Number of Neighbors (k)</label>{{ form.n_neighbors }}</div>
+            </div>
+          </div>
+          <div class="hyperparam-group" data-algo="linear_regression" style="display:none">
+            <div style="text-align:center;padding:24px;color:#64748b">No hyperparameters for standard Linear Regression</div>
+          </div>
+          <div class="hyperparam-group" data-algo="naive_bayes" style="display:none">
+            <div style="text-align:center;padding:24px;color:#64748b">No configurable hyperparameters for Naive Bayes</div>
+          </div>
+          <div id="defaultMsg" style="text-align:center;padding:24px;color:#64748b">
+            <i class="fas fa-arrow-up" style="display:block;margin-bottom:8px"></i>Select an algorithm type to see hyperparameters
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-5">
+      <div class="card mb-4">
+        <div class="card-header"><h5><i class="fas fa-info-circle me-2" style="color:#06b6d4"></i>Algorithm Guide</h5></div>
+        <div class="card-body" style="font-size:13px;color:#94a3b8;display:flex;flex-direction:column;gap:8px">
+          <div><strong style="color:#a5b4fc">Linear/Ridge/Lasso:</strong> α controls regularization strength. Higher values = more regularization.</div>
+          <div><strong style="color:#a5b4fc">Random Forest / Gradient Boosting:</strong> More estimators = better accuracy but slower training.</div>
+          <div><strong style="color:#a5b4fc">Neural Network:</strong> Enter hidden layer sizes like 100,50 for a 2-layer network.</div>
+          <div><strong style="color:#a5b4fc">SVM:</strong> C is the regularization parameter. Higher C = less regularization.</div>
+          <div><strong style="color:#a5b4fc">KNN:</strong> Lower k = more complex boundary, higher k = smoother.</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-body">
+          <button type="submit" class="btn btn-primary w-100 mb-2" style="padding:13px;font-size:15px">
+            <i class="fas fa-save"></i> Save Configuration
+          </button>
+          <a href="{% url 'algorithms:algorithm_list' %}" class="btn btn-outline-primary w-100">Cancel</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('algorithm_type_select').addEventListener('change', function() {
+  document.getElementById('defaultMsg').style.display = 'none';
+  toggleHyperparams(this.value);
+});
+// Show on load if editing
+const sel = document.getElementById('algorithm_type_select');
+if (sel && sel.value) {
+  document.getElementById('defaultMsg').style.display = 'none';
+  toggleHyperparams(sel.value);
+}
+</script>
+{% endblock %}

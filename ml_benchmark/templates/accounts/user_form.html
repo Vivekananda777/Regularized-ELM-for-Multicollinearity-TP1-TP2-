@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div><h1>{{ title }}</h1><p>Fill in the details below</p></div>
+  <a href="{% url 'accounts:user_management' %}" class="btn btn-outline-primary"><i class="fas fa-arrow-left"></i> Back</a>
+</div>
+<div class="card" style="max-width:640px">
+  <div class="card-header"><h5><i class="fas fa-user-cog me-2" style="color:#4f46e5"></i>{{ title }}</h5></div>
+  <div class="card-body">
+    <form method="post">
+      {% csrf_token %}
+      <div class="row g-3">
+        {% for field in form %}
+        <div class="col-{% if field.name == 'password1' or field.name == 'password2' %}12{% else %}6{% endif %}">
+          <label class="form-label">{{ field.label }}</label>
+          {{ field }}
+          {% if field.errors %}<div style="color:#f87171;font-size:12px;margin-top:4px">{{ field.errors.0 }}</div>{% endif %}
+          {% if field.help_text %}<div style="color:#64748b;font-size:11px;margin-top:3px">{{ field.help_text }}</div>{% endif %}
+        </div>
+        {% endfor %}
+      </div>
+      <div class="mt-4 d-flex gap-3">
+        <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save</button>
+        <a href="{% url 'accounts:user_management' %}" class="btn btn-outline-primary">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
