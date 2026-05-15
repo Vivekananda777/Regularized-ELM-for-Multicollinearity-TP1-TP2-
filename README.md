@@ -43,7 +43,8 @@ Improves stability in multicollinear environments
 
 
 ## 🏗️ System Architecture
-``
+
+```
 Dataset Upload
       ↓
 Data Preprocessing
@@ -59,7 +60,7 @@ Dashboard & Visualization
 Report Generation
       ↓
 Monitoring System
-``
+```
 
 ## ✅ Features
 
